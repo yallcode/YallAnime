@@ -388,6 +388,68 @@
     }
     .modal-meta-item span { font-size: 13px; font-weight: 600; }
 
+    /* WATCH POPUP */
+    .watch-popup {
+      position: fixed; inset: 0; z-index: 600;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.25s;
+    }
+    .watch-popup.open { opacity: 1; pointer-events: all; }
+    .watch-box {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px 28px 24px;
+      width: min(420px, 92vw);
+      transform: scale(0.93); transition: transform 0.25s;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+    }
+    .watch-popup.open .watch-box { transform: scale(1); }
+    .watch-box-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .watch-box-title {
+      font-family: var(--font-display); font-size: 22px; letter-spacing: 0.5px;
+      line-height: 1.2; max-width: 330px;
+    }
+    .watch-box-close {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--bg3); border: none; color: var(--muted);
+      font-size: 16px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0;
+      transition: background 0.2s, color 0.2s;
+    }
+    .watch-box-close:hover { background: var(--accent); color: #fff; }
+    .watch-box-sub {
+      font-size: 13px; color: var(--muted); margin-bottom: 20px;
+    }
+    .watch-options { display: flex; flex-direction: column; gap: 10px; }
+    .watch-option {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--bg3);
+      text-decoration: none; color: var(--text);
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      cursor: pointer;
+    }
+    .watch-option:hover {
+      border-color: var(--accent); background: rgba(230,57,70,0.07);
+      transform: translateX(3px);
+    }
+    .watch-option-icon {
+      width: 38px; height: 38px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .watch-option-info { flex: 1; }
+    .watch-option-name { font-size: 14px; font-weight: 600; }
+    .watch-option-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .watch-option-arrow { color: var(--muted); font-size: 18px; }
+    .watch-divider {
+      text-align: center; font-size: 11px; color: var(--muted);
+      margin: 4px 0; letter-spacing: 1px; text-transform: uppercase;
+    }
+
     /* FOOTER */
     footer {
       background: var(--bg2); border-top: 1px solid var(--border);
@@ -477,7 +539,7 @@
     <div class="hero-meta" id="heroMeta"></div>
     <p class="hero-desc" id="heroDesc"></p>
     <div class="hero-btns">
-      <a href="#" class="btn btn-primary" id="heroBtn">
+      <a href="#" class="btn btn-primary" id="heroBtn" onclick="openWatch(event, document.getElementById('heroTitle').textContent)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         Watch Now
       </a>
@@ -631,6 +693,44 @@
   </div>
 </footer>
 
+<!-- WATCH POPUP -->
+<div class="watch-popup" id="watchPopup">
+  <div class="watch-box">
+    <div class="watch-box-header">
+      <div class="watch-box-title" id="watchTitle"></div>
+      <button class="watch-box-close" id="watchClose">✕</button>
+    </div>
+    <div class="watch-box-sub">Choose where to watch</div>
+    <div class="watch-options">
+      <a class="watch-option" id="watchGogo" target="_blank" rel="noopener">
+        <div class="watch-option-icon" style="background:#1a2a1a">🟢</div>
+        <div class="watch-option-info">
+          <div class="watch-option-name">Gogoanime</div>
+          <div class="watch-option-desc">Free · Sub &amp; Dub · All episodes</div>
+        </div>
+        <span class="watch-option-arrow">›</span>
+      </a>
+      <div class="watch-divider">or</div>
+      <a class="watch-option" id="watchCrunchyroll" target="_blank" rel="noopener">
+        <div class="watch-option-icon" style="background:#2a1f0a">🟠</div>
+        <div class="watch-option-info">
+          <div class="watch-option-name">Crunchyroll</div>
+          <div class="watch-option-desc">Official · Free with ads · Premium available</div>
+        </div>
+        <span class="watch-option-arrow">›</span>
+      </a>
+      <a class="watch-option" id="watchAnimeSaturn" target="_blank" rel="noopener">
+        <div class="watch-option-icon" style="background:#0a1a2a">🔵</div>
+        <div class="watch-option-info">
+          <div class="watch-option-name">9anime</div>
+          <div class="watch-option-desc">Free · Multiple servers · HD quality</div>
+        </div>
+        <span class="watch-option-arrow">›</span>
+      </a>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal" id="modal">
@@ -643,7 +743,7 @@
       <div class="modal-tags" id="modalTags"></div>
       <div class="modal-meta-grid" id="modalMetaGrid"></div>
       <p class="modal-desc" id="modalDesc"></p>
-      <a href="#" class="btn btn-primary" style="gap:8px">
+      <a href="#" class="btn btn-primary" onclick="openWatch(event, document.getElementById('modalTitle').textContent)" style="gap:8px">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         Watch Now
       </a>
@@ -672,12 +772,12 @@ function animeCardHTML(a, badge) {
   const eps = a.episodes ? `EP ${a.episodes}` : (a.type === 'Movie' ? 'Movie' : 'Ongoing');
   const score = a.score ? `⭐ ${a.score}` : '';
   const title = a.title_english || a.title || 'Unknown';
+  const titleEsc = title.replace(/'/g, "\\'");
   return `
-    <a class="anime-card" href="https://myanimelist.net/anime/${a.mal_id}" target="_blank" rel="noopener"
-       data-id="${a.mal_id}" onclick="openModal(event, ${a.mal_id})">
+    <div class="anime-card" data-id="${a.mal_id}">
       <div class="anime-thumb">
         <img src="${img}" alt="${title}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x320/12141f/6b7280?text=No+Image'" />
-        <div class="anime-thumb-overlay">
+        <div class="anime-thumb-overlay" onclick="openWatch(event, '${titleEsc}')">
           <div class="play-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
           </div>
@@ -685,23 +785,23 @@ function animeCardHTML(a, badge) {
         ${badge ? `<span class="anime-badge">${badge}</span>` : ''}
         ${score ? `<span class="anime-ep-badge">${score}</span>` : `<span class="anime-ep-badge">${eps}</span>`}
       </div>
-      <div class="anime-info">
+      <div class="anime-info" onclick="openModal(event, ${a.mal_id})" style="cursor:pointer">
         <div class="anime-name">${title}</div>
         <div class="anime-sub">${a.type || 'TV'} ${eps !== 'Movie' && eps !== 'Ongoing' ? '· ' + eps + ' eps' : ''}</div>
       </div>
-    </a>`;
+    </div>`;
 }
 
 // ---- TRENDING CARD HTML ----
 function trendingCardHTML(a, idx) {
   const img = a.images?.jpg?.image_url || '';
   const title = a.title_english || a.title || 'Unknown';
+  const titleEsc = title.replace(/'/g, "\\'");
   const score = a.score || 'N/A';
   const type = a.type || 'TV';
   const eps = a.episodes ? `${a.episodes} eps` : 'Ongoing';
   return `
-    <a class="trending-card" href="https://myanimelist.net/anime/${a.mal_id}" target="_blank" rel="noopener"
-       data-id="${a.mal_id}" onclick="openModal(event, ${a.mal_id})">
+    <div class="trending-card" onclick="openWatch(event, '${titleEsc}')">
       <span class="trending-num">${String(idx).padStart(2,'0')}</span>
       <img class="trending-img" src="${img}" alt="${title}" loading="lazy" onerror="this.src='https://via.placeholder.com/52x72/12141f/6b7280?text=?'" />
       <div class="trending-info">
@@ -709,7 +809,7 @@ function trendingCardHTML(a, idx) {
         <div class="trending-meta">${type} · ${eps}</div>
         <div class="trending-score">⭐ ${score}</div>
       </div>
-    </a>`;
+    </div>`;
 }
 
 // ---- HERO ----
@@ -813,7 +913,30 @@ document.getElementById('modalOverlay').addEventListener('click', (e) => {
     document.getElementById('modalOverlay').classList.remove('open');
 });
 
-// ---- SEARCH ----
+// ---- WATCH POPUP ----
+let currentWatchTitle = '';
+
+function openWatch(e, title) {
+  e.preventDefault();
+  e.stopPropagation();
+  currentWatchTitle = title;
+  const q = encodeURIComponent(title);
+  document.getElementById('watchTitle').textContent = title;
+  document.getElementById('watchGogo').href = `https://gogoanime3.co/search.html?keyword=${q}`;
+  document.getElementById('watchCrunchyroll').href = `https://www.crunchyroll.com/search?q=${q}`;
+  document.getElementById('watchAnimeSaturn').href = `https://9animetv.to/search?keyword=${q}`;
+  document.getElementById('watchPopup').classList.add('open');
+}
+
+document.getElementById('watchClose').onclick = () => {
+  document.getElementById('watchPopup').classList.remove('open');
+};
+document.getElementById('watchPopup').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('watchPopup'))
+    document.getElementById('watchPopup').classList.remove('open');
+});
+
+
 let searchTimer;
 const searchInput = document.getElementById('searchInput');
 const searchDropdown = document.getElementById('searchDropdown');
