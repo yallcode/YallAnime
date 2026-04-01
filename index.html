@@ -398,9 +398,10 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:32px 28p
 
         <div class="server-row">
           <span style="font-size:11px;color:var(--muted);font-weight:600">Server:</span>
-          <button class="server-btn on" id="srv0">embed.su</button>
-          <button class="server-btn" id="srv1">2embed</button>
-          <button class="server-btn" id="srv2">vidsrc</button>
+          <button class="server-btn on" id="srv0">vidsrc.me</button>
+          <button class="server-btn" id="srv1">vidsrc.xyz</button>
+          <button class="server-btn" id="srv2">anify</button>
+          <button class="server-btn" id="srv3">9anime</button>
         </div>
 
         <p class="watch-desc" id="watchDesc"></p>
@@ -429,7 +430,7 @@ let currentAnime = null;
 let currentEp = 1;
 let totalEps = 1;
 let currentMalId = null;
-let currentServer = 'embed.su';
+let currentServer = 'vidsrc.me';
 let heroList = [], heroIdx = 0, heroTimer;
 
 // ══════════════════════════════════════
@@ -452,10 +453,11 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 // ══════════════════════════════════════
 function buildEmbed(malId, ep, server) {
   const id = malId, e = ep;
-  if (server === 'embed.su')  return `https://embed.su/embed/anime/${id}/${e}`;
-  if (server === '2embed')    return `https://www.2embed.cc/embedanime/${id}/${e}`;
-  if (server === 'vidsrc')    return `https://vidsrc.to/embed/anime/${id}/${e}`;
-  return `https://embed.su/embed/anime/${id}/${e}`;
+  if (server === 'vidsrc.me')  return `https://vidsrc.me/embed/anime?mal=${id}&ep=${e}`;
+  if (server === 'vidsrc.xyz') return `https://vidsrc.xyz/embed/anime?mal=${id}&ep=${e}`;
+  if (server === 'anify')      return `https://anify.tv/embed/${id}?episode=${e}&audio=sub`;
+  if (server === '9anime')     return `https://9animetv.to/embed/anime?mal=${id}&ep=${e}`;
+  return `https://vidsrc.me/embed/anime?mal=${id}&ep=${e}`;
 }
 
 // ══════════════════════════════════════
@@ -639,13 +641,14 @@ async function loadWatchPage(malId, ep) {
   document.getElementById('watchBack').onclick  = () => goInfo(malId);
 
   // Server buttons
-  ['srv0','srv1','srv2'].forEach((id,i) => {
-    const servers = ['embed.su','2embed','vidsrc'];
+  ['srv0','srv1','srv2','srv3'].forEach((id,i) => {
+    const servers = ['vidsrc.me','vidsrc.xyz','anify','9anime'];
     const btn = document.getElementById(id);
+    if (!btn) return;
     btn.classList.toggle('on', servers[i] === currentServer);
     btn.onclick = () => {
       currentServer = servers[i];
-      ['srv0','srv1','srv2'].forEach(b => document.getElementById(b).classList.remove('on'));
+      ['srv0','srv1','srv2','srv3'].forEach(b => { const el=document.getElementById(b); if(el) el.classList.remove('on'); });
       btn.classList.add('on');
       loadPlayer(malId, ep);
     };
