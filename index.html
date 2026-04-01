@@ -753,22 +753,22 @@ async function loadHome() {
     startHeroLoop();
   }
 
-  await sleep(400);
+  await sleep(1200);
   const trend = await jikan('/top/anime?limit=12&filter=bypopularity');
   if (trend?.data) document.getElementById('trendList').innerHTML =
     trend.data.map((a,i) => trendHTML(a, i+1)).join('');
 
-  await sleep(400);
+  await sleep(1200);
   const airing = await jikan('/top/anime?limit=12&filter=airing');
   if (airing?.data) document.getElementById('airingGrid').innerHTML =
     airing.data.map(a => cardHTML(a,'AIRING')).join('');
 
-  await sleep(400);
+  await sleep(1200);
   const topAll = await jikan('/top/anime?limit=12');
   if (topAll?.data) document.getElementById('topGrid').innerHTML =
     topAll.data.map(a => cardHTML(a, null)).join('');
 
-  await sleep(400);
+  await sleep(1200);
   const movies = await jikan('/top/anime?limit=12&type=movie');
   if (movies?.data) document.getElementById('movieGrid').innerHTML =
     movies.data.map(a => cardHTML(a,'MOVIE')).join('');
