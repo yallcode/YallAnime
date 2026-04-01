@@ -397,11 +397,8 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:32px 28p
         </div>
 
         <div class="server-row">
-          <span style="font-size:11px;color:var(--muted);font-weight:600">Server:</span>
-          <button class="server-btn on" id="srv0">vidsrc.pro</button>
-          <button class="server-btn" id="srv1">vidsrc.dev</button>
-          <button class="server-btn" id="srv2">vidsrc.cc</button>
-          <button class="server-btn" id="srv3">smashy</button>
+          <span style="font-size:11px;color:var(--muted);font-weight:600">Source:</span>
+          <span class="server-btn on">GogoAnime via Worker</span>
         </div>
 
         <p class="watch-desc" id="watchDesc"></p>
@@ -425,16 +422,20 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:32px 28p
 //  STATE & CONFIG
 // ══════════════════════════════════════
 const JIKAN = 'https://api.jikan.moe/v4';
+
+// ▶ PASTE YOUR CLOUDFLARE WORKER URL HERE
+const WORKER = 'https://yallanime.yallcc-info.workers.dev';
+
 const apiCache = {};
 let currentAnime = null;
 let currentEp = 1;
 let totalEps = 1;
 let currentMalId = null;
-let currentServer = 'vidsrc.pro';
+let currentServer = 'gogoanime';
 let heroList = [], heroIdx = 0, heroTimer;
 
 // ══════════════════════════════════════
-//  API HELPER
+//  API HELPERS
 // ══════════════════════════════════════
 async function jikan(path) {
   if (apiCache[path]) return apiCache[path];
@@ -448,16 +449,13 @@ async function jikan(path) {
 }
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// ══════════════════════════════════════
-//  EMBED URL BUILDER
-// ══════════════════════════════════════
-function buildEmbed(malId, ep, server) {
-  const id = malId, e = ep;
-  if (server === 'vidsrc.pro')  return `https://vidsrc.pro/embed/anime/${id}/${e}`;
-  if (server === 'vidsrc.dev')  return `https://vidsrc.dev/embed/anime?mal=${id}&ep=${e}`;
-  if (server === 'vidsrc.cc')   return `https://vidsrc.cc/embed/anime?mal=${id}&ep=${e}`;
-  if (server === 'smashystream') return `https://player.smashy.stream/anime?id=${id}&ep=${e}`;
-  return `https://vidsrc.pro/embed/anime/${id}/${e}`;
+// Call the Cloudflare Worker to get the real gogoanime embed URL
+async function fetchEmbedUrl(title, ep) {
+  try {
+    const res = await fetch(`${WORKER}/embed?title=${encodeURIComponent(title)}&ep=${ep}`);
+    const data = await res.json();
+    return data.embedUrl || null;
+  } catch(e) { return null; }
 }
 
 // ══════════════════════════════════════
@@ -640,37 +638,42 @@ async function loadWatchPage(malId, ep) {
   document.getElementById('nextEpBtn').onclick = () => ep < totalEps && goWatch(malId, ep+1);
   document.getElementById('watchBack').onclick  = () => goInfo(malId);
 
-  // Server buttons
-  ['srv0','srv1','srv2','srv3'].forEach((id,i) => {
-    const servers = ['vidsrc.pro','vidsrc.dev','vidsrc.cc','smashystream'];
-    const btn = document.getElementById(id);
-    if (!btn) return;
-    btn.classList.toggle('on', servers[i] === currentServer);
-    btn.onclick = () => {
-      currentServer = servers[i];
-      ['srv0','srv1','srv2','srv3'].forEach(b => { const el=document.getElementById(b); if(el) el.classList.remove('on'); });
-      btn.classList.add('on');
-      loadPlayer(malId, ep);
-    };
-  });
-
   buildSidebar(malId, ep, totalEps);
   loadPlayer(malId, ep);
 }
 
-function loadPlayer(malId, ep) {
+async function loadPlayer(malId, ep) {
   const frame   = document.getElementById('playerFrame');
   const spinner = document.getElementById('playerSpinner');
+  const title   = currentAnime?.title_english || currentAnime?.title || '';
+
   spinner.style.opacity = '1'; spinner.style.pointerEvents = 'all';
   frame.src = '';
-  setTimeout(() => {
-    frame.src = buildEmbed(malId, ep, currentServer);
-    frame.onload = () => {
-      spinner.style.opacity = '0'; spinner.style.pointerEvents = 'none';
-    };
-    // Fallback hide spinner
-    setTimeout(() => { spinner.style.opacity='0'; spinner.style.pointerEvents='none'; }, 5000);
-  }, 150);
+
+  // Show loading message in player area
+  spinner.innerHTML = `
+    <div style="text-align:center">
+      <div class="spinner" style="margin:0 auto 14px"></div>
+      <div style="font-size:13px;color:#8892aa">Fetching episode source…</div>
+    </div>`;
+
+  const embedUrl = await fetchEmbedUrl(title, ep);
+
+  if (!embedUrl) {
+    spinner.innerHTML = `
+      <div style="text-align:center;padding:20px">
+        <div style="font-size:32px;margin-bottom:10px">😔</div>
+        <div style="font-size:14px;color:#e63946;font-weight:600;margin-bottom:6px">Episode not found</div>
+        <div style="font-size:12px;color:#5a6278">Make sure your Worker URL is set correctly in the code.<br>Or this anime may not be on GogoAnime.</div>
+      </div>`;
+    return;
+  }
+
+  frame.src = embedUrl;
+  frame.onload = () => {
+    spinner.style.opacity = '0'; spinner.style.pointerEvents = 'none';
+  };
+  setTimeout(() => { spinner.style.opacity='0'; spinner.style.pointerEvents='none'; }, 8000);
 }
 
 // ══════════════════════════════════════
