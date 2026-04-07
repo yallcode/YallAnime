@@ -4,7 +4,7 @@
 
 A single-file anime streaming site built for GitHub Pages, powered by the [Jikan API](https://jikan.moe/) and a custom Cloudflare Worker backend.
 
-**Live Site:** [your-link-here](https://yallcode.github.io/yallanime)  
+<!-- **Live Site:** [My site!](https://yallcode.github.io/YallAnime/)   -->
 **Discord:** [Join the server](https://discord.gg/yUe8kE5fRF)  
 **Developer:** [YallCode](https://YallCode.github.io/YallaYCode/)
 
